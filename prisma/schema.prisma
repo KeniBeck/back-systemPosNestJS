@@ -13,13 +13,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id_user String @id @default(cuid())
-  fullname String 
-  email String @unique
-  pass String
-  phone String
-  rol String
-  cretedAt DateTime @default(now())
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Sales     Sale[]  
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  Users User[]
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  category    Category   @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  SaleItems   SaleItem[]
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  Products  Product[] 
+}
+
+model Sale {
+  id          Int        @id @default(autoincrement())
+  totalAmount Float
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  SaleItems   SaleItem[] 
+  Payments    Payment[]  
+}
+
+model SaleItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  unitPrice  Float
+  sale       Sale     @relation(fields: [saleId], references: [id])
+  saleId     Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  createdAt  DateTime @default(now())
+}
+
+model Payment {
+  id         Int      @id @default(autoincrement())
+  method     String
+  amount     Float
+  sale       Sale     @relation(fields: [saleId], references: [id])
+  saleId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+/// Este la creo para las configuraciones globales del sistema (impuestos, descuentos, etc)
+model Config {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
   updatedAt DateTime @updatedAt
 }
